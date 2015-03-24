@@ -6,6 +6,58 @@ import Graphics.Rendering.OpenGL
 import Graphics.GLUtil
 import Foreign.Storable (sizeOf)
 
+-- Initialization to set up window --
+main :: IO ()
+main = do
+  _ <- init
+  applyWindowHints
+  
+  maybeWindow <- createWindow 640 480 "SpacePuppy" Nothing Nothing
+  
+  case maybeWindow of
+    Nothing     -> print "Couldn't create a window :*(" 
+    Just window -> do
+      resources <- makeResources
+      -- Create a VAO, as required by OpenGL Core Context
+      vao <- makeVAO (bindGeometry resources)
+
+      -- Bind our one and only VAO
+      bindVertexArrayObject $= Just vao
+
+      -- Enable VSync
+      swapInterval 1
+      makeContextCurrent ( Just window )
+
+      -- Bind our shader
+      currentProgram $= Just (spsProgram (rscShader resources))
+
+      mainLoop window (rscShader resources) 0
+
+-- Actually Starting once window is up --
+mainLoop :: Window -> SPShader -> GLclampf -> IO a
+mainLoop window shader frameNumber = do
+  -- Clear the frame
+  clearColor $= Color4 0.1 0.2 0.1 0 
+  clear [ ColorBuffer ]
+  
+  -- Make sure our viewport matches the latest window size
+  (width, height) <- getFramebufferSize window
+  viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
+  
+  -- Send along the current framenumber as a uniform
+  uniform (spsFrameNumberU shader) $= Index1 frameNumber
+  
+  -- Draw the fullscreens quad
+  drawElements TriangleStrip (fromIntegral (length elementBufferData)) UnsignedInt offset0
+
+  -- Swap buffers, poll events, and start rendering the next frame
+  swapBuffers window
+  pollEvents
+  mainLoop window shader ( frameNumber + 1 )
+ 
+
+-- Bookkeeping
+
 data SPShader = SPShader { spsProgram      :: Program
                          , spsPositionA    :: AttribLocation
                          , spsFrameNumberU :: UniformLocation
@@ -50,56 +102,6 @@ makeResources =  Resources
              <*> makeBuffer ElementArrayBuffer elementBufferData
              <*> initShader
 
--- Initialization to set up window --
-main :: IO ()
-main = do
-  _ <- init
-  applyWindowHints
-  
-  maybeWindow <- createWindow 640 480 "SpacePuppy" Nothing Nothing
-  
-  case maybeWindow of
-    Nothing     -> print "Couldn't create a window :*(" 
-    Just window -> do
-      resources <- makeResources
-      -- Create a VAO, as required by OpenGL Core Context
-      vao <- makeVAO (bindGeometry resources)
-
-      -- Bind our one and only VAO
-      bindVertexArrayObject $= Just vao
-
-      
-      swapInterval 1 -- Enable VSync
-      makeContextCurrent ( Just window )
-
-      -- Bind our shader
-      currentProgram $= Just (spsProgram (rscShader resources))
-
-      mainLoop window resources 0
-
--- Actually Starting once window is up --
-mainLoop :: Window -> Resources -> GLclampf -> IO a
-mainLoop window resources frameNumber = do
-  -- Clear the frame
-  clearColor $= Color4 0.1 0.2 0.1 0 
-  clear [ ColorBuffer ]
-  
-  -- Make sure our viewport matches the latest window size
-  (width, height) <- getFramebufferSize window
-  viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
-  
-  -- Send along the current framenumber as a uniform
-  uniform (spsFrameNumberU (rscShader resources)) $= Index1 frameNumber
-  
-  -- Draw the fullscreens quad
-  drawElements TriangleStrip (fromIntegral (length elementBufferData)) UnsignedInt offset0
-
-  -- Swap buffers, poll events, and start rendering the next frame
-  swapBuffers window
-  pollEvents
-  mainLoop window resources ( frameNumber + 1 )
- 
-
 bindGeometry :: Resources -> IO ()
 bindGeometry resources = do
   let numComponents = 2 -- We only use X & Y since this is a fullscreen quad
@@ -112,3 +114,5 @@ bindGeometry resources = do
   vertexAttribPointer positionA $= (ToFloat, vad)
   -- Bind the indices to render the quad as a triangle strip
   bindBuffer ElementArrayBuffer $= Just (rscElementBuffer resources)
+
+
