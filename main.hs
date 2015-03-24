@@ -17,21 +17,13 @@ main = do
   case maybeWindow of
     Nothing     -> print "Couldn't create a window :*(" 
     Just window -> do
-      resources <- makeResources
-      -- Create a VAO, as required by OpenGL Core Context
-      vao <- makeVAO (bindGeometry resources)
-
-      -- Bind our one and only VAO
-      bindVertexArrayObject $= Just vao
-
       -- Enable VSync
       swapInterval 1
       makeContextCurrent ( Just window )
 
-      -- Bind our shader
-      currentProgram $= Just (spsProgram (rscShader resources))
+      shader <- initResources
 
-      mainLoop window (rscShader resources) 0
+      mainLoop window shader 0
 
 -- Actually Starting once window is up --
 mainLoop :: Window -> SPShader -> GLfloat -> IO a
@@ -63,11 +55,6 @@ data SPShader = SPShader { spsProgram      :: Program
                          , spsFrameNumberU :: UniformLocation
                          }
 
-data Resources = Resources { rscVertexBuffer  :: BufferObject
-                           , rscElementBuffer :: BufferObject
-                           , rscShader        :: SPShader
-                           }
-
 -- Vertices for a fullscreen quad
 vertexBufferData :: [ GLfloat ]
 vertexBufferData =  [ -1 , -1 
@@ -88,6 +75,33 @@ initShader = do
     <$> get (attribLocation p "position")
     <*> get (uniformLocation p "frameNumber")
 
+initResources :: IO SPShader
+initResources = do
+  shader   <- initShader
+  vertices <- makeBuffer ArrayBuffer vertexBufferData
+  indices  <- makeBuffer ElementArrayBuffer elementBufferData
+
+  -- Create a VAO, as required by the OpenGL Core Context
+  vao <- makeVAO $ do
+    let numComponents = 2 -- We only use X & Y since this is a fullscreen quad
+        stride    = fromIntegral $ sizeOf (undefined::GLfloat) * fromIntegral numComponents
+        vad       = VertexArrayDescriptor numComponents Float stride offset0
+        positionA = spsPositionA shader
+    -- Bind our vertices
+    bindBuffer ArrayBuffer        $= Just vertices
+    vertexAttribArray positionA   $= Enabled
+    vertexAttribPointer positionA $= (ToFloat, vad)
+    -- Bind the indices to render the quad as a triangle strip
+    bindBuffer ElementArrayBuffer $= Just indices
+
+  -- Bind our VAO
+  bindVertexArrayObject $= Just vao
+  
+  -- Bind our shader
+  currentProgram $= Just (spsProgram shader)
+
+  return shader
+
 applyWindowHints :: IO ()
 applyWindowHints = do
   windowHint $ WindowHint'ClientAPI ClientAPI'OpenGL
@@ -95,24 +109,3 @@ applyWindowHints = do
   windowHint $ WindowHint'OpenGLProfile OpenGLProfile'Core
   windowHint $ WindowHint'ContextVersionMajor 3
   windowHint $ WindowHint'ContextVersionMinor 2
-
-makeResources :: IO Resources
-makeResources =  Resources
-             <$> makeBuffer ArrayBuffer vertexBufferData
-             <*> makeBuffer ElementArrayBuffer elementBufferData
-             <*> initShader
-
-bindGeometry :: Resources -> IO ()
-bindGeometry resources = do
-  let numComponents = 2 -- We only use X & Y since this is a fullscreen quad
-      stride = fromIntegral $ sizeOf (undefined::GLfloat) * fromIntegral numComponents
-      vad = VertexArrayDescriptor numComponents Float stride offset0
-      positionA = spsPositionA (rscShader resources)
-  -- Bind our vertices
-  bindBuffer ArrayBuffer        $= Just (rscVertexBuffer resources)
-  vertexAttribArray positionA   $= Enabled
-  vertexAttribPointer positionA $= (ToFloat, vad)
-  -- Bind the indices to render the quad as a triangle strip
-  bindBuffer ElementArrayBuffer $= Just (rscElementBuffer resources)
-
-
