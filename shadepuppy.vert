@@ -1,11 +1,11 @@
 #version 330
 
-in vec2 position;
-uniform float frameNumber;
-out vec2 fragXY;
+in vec2 vertexPosition;
+uniform float iGlobalTime;
+out vec2 fragCoord;
 
 void main() {
-    fragXY = (position + 1) / 2;
-    gl_Position = vec4(position, 0.0, 1.0);
+    fragCoord = (vertexPosition + 1) / 2;
+    gl_Position = vec4(vertexPosition, 0.0, 1.0);
 }
 

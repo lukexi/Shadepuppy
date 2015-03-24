@@ -1,10 +1,11 @@
 import Prelude hiding (init) 
 import Control.Applicative
-
+import Control.Monad
 import Graphics.UI.GLFW
 import Graphics.Rendering.OpenGL
 import Graphics.GLUtil
 import Foreign.Storable (sizeOf)
+import Data.Time
 
 -- Initialization to set up window
 main :: IO ()
@@ -27,11 +28,12 @@ main = do
       shader <- setupResources
 
       -- Begin rendering
-      mainLoop window shader 0
+      startTime <- getCurrentTime
+      forever $ renderFrame window shader startTime
 
 -- Begin rendering
-mainLoop :: Window -> SPShader -> GLfloat -> IO a
-mainLoop window shader frameNumber = do
+renderFrame :: Window -> SPShader -> UTCTime -> IO ()
+renderFrame window shader startTime = do
   -- Clear the frame
   clearColor $= Color4 0.1 0.2 0.1 0 
   clear [ ColorBuffer ]
@@ -41,7 +43,8 @@ mainLoop window shader frameNumber = do
   viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
   
   -- Send along the current framenumber as a uniform
-  uniform (spsFrameNumberU shader) $= Index1 frameNumber
+  globalTime <- realToFrac . flip diffUTCTime startTime <$> getCurrentTime
+  uniform (spsGlobalTimeU shader) $= Index1 (globalTime :: GLfloat)
   
   -- Draw the fullscreens quad
   drawElements TriangleStrip elementLength UnsignedInt offset0
@@ -49,14 +52,13 @@ mainLoop window shader frameNumber = do
   -- Swap buffers, poll events, and start rendering the next frame
   swapBuffers window
   pollEvents
-  mainLoop window shader ( frameNumber + 1 )
  
 
 -- Bookkeeping
 
-data SPShader = SPShader { spsProgram      :: Program
-                         , spsPositionA    :: AttribLocation
-                         , spsFrameNumberU :: UniformLocation
+data SPShader = SPShader { spsProgram     :: Program
+                         , spsVertexPosA  :: AttribLocation
+                         , spsGlobalTimeU :: UniformLocation
                          }
 
 -- Vertices for a fullscreen quad
@@ -91,8 +93,8 @@ initShader = do
   fs <- loadShader FragmentShader "shadepuppy.frag"
   p  <- linkShaderProgram [vs, fs]
   SPShader p
-    <$> get (attribLocation p "position")
-    <*> get (uniformLocation p "frameNumber")
+    <$> get (attribLocation p "vertexPosition")
+    <*> get (uniformLocation p "iGlobalTime")
 
 setupResources :: IO SPShader
 setupResources = do
@@ -102,12 +104,12 @@ setupResources = do
 
   -- Create a VAO for our geometry, as required by the OpenGL Core Context
   vao <- makeVAO $ do
-    let positionA = spsPositionA shader
+    let vertexPosA = spsVertexPosA shader
     -- Bind the vertex buffer
     bindBuffer ArrayBuffer        $= Just vertices
     -- Indicate where and how to provide the vertexes
-    vertexAttribArray   positionA $= Enabled
-    vertexAttribPointer positionA $= (ToFloat, vertexDescriptor)
+    vertexAttribArray   vertexPosA $= Enabled
+    vertexAttribPointer vertexPosA $= (ToFloat, vertexDescriptor)
     -- Bind the indices to render the quad as a triangle strip
     bindBuffer ElementArrayBuffer $= Just indices
 

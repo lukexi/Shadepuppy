@@ -21,6 +21,7 @@ executable shadepuppy
   -- other-extensions:    
   build-depends:       
     base,
+    time,
     GLUtil,
     OpenGL,
     GLFW-b
