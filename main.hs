@@ -61,13 +61,20 @@ main = do
   case maybeWindow of
     Nothing     -> print "Couldn't create a window :*(" 
     Just window -> do
+      resources <- makeResources
       -- Create a VAO, as required by OpenGL Core Context
-      vao <- makeVAO (return ())
+      vao <- makeVAO (bindGeometry resources)
+
+      -- Bind our one and only VAO
       bindVertexArrayObject $= Just vao
 
-      resources <- makeResources
+      
       swapInterval 1 -- Enable VSync
       makeContextCurrent ( Just window )
+
+      -- Bind our shader
+      currentProgram $= Just (spsProgram (rscShader resources))
+
       mainLoop window resources 0
 
 -- Actually Starting once window is up --
@@ -81,13 +88,9 @@ mainLoop window resources frameNumber = do
   (width, height) <- getFramebufferSize window
   viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
   
-  -- Bind our shader
-  currentProgram $= Just (spsProgram (rscShader resources))
   -- Send along the current framenumber as a uniform
   uniform (spsFrameNumberU (rscShader resources)) $= Index1 frameNumber
   
-  -- Bind our fullscreen quad geometry
-  bindGeometry resources
   -- Draw the fullscreens quad
   drawElements TriangleStrip (fromIntegral (length elementBufferData)) UnsignedInt offset0
 
