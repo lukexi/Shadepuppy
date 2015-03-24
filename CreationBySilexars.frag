@@ -2,22 +2,22 @@
 
 in vec2 fragCoord;
 uniform float iGlobalTime;
+uniform vec3  iResolution;
 out vec4 fragColor;
-
-// https://www.shadertoy.com/view/XsXXDn
-// minus use of iResolution which we don't have yet
 
 // http://www.pouet.net/prod.php?which=57245
 
 #define t iGlobalTime
+#define r iResolution.xy
 
 void main() {
     vec3 c;
     float l,z=t;
     for(int i=0;i<3;i++) {
-        vec2 uv,p=fragCoord;
+        vec2 uv,p=fragCoord.xy/r;
         uv=p;
         p-=.5;
+        p.x*=r.x/r.y;
         z+=.07;
         l=length(p);
         uv+=p/l*(sin(z)+1.)*abs(sin(l*9.-z*2.));

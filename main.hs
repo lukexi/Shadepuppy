@@ -7,6 +7,11 @@ import Graphics.GLUtil
 import Foreign.Storable (sizeOf)
 import Data.Time
 
+shaderName :: String
+-- shaderName = "shadepuppy" -- default shader
+-- shaderName = "CreationBySilexars"
+shaderName = "ImpactByCabbibo"
+
 -- Initialization to set up window
 main :: IO ()
 main = do
@@ -45,6 +50,7 @@ renderFrame window shader startTime = do
   -- Send along the current framenumber as a uniform
   globalTime <- realToFrac . flip diffUTCTime startTime <$> getCurrentTime
   uniform (spsGlobalTimeU shader) $= Index1 (globalTime :: GLfloat)
+  uniform (spsResolutionU shader) $= Vertex3 (fromIntegral width) (fromIntegral height) (0 :: GLfloat)
   
   -- Draw the fullscreens quad
   drawElements TriangleStrip elementLength UnsignedInt offset0
@@ -59,6 +65,7 @@ renderFrame window shader startTime = do
 data SPShader = SPShader { spsProgram     :: Program
                          , spsVertexPosA  :: AttribLocation
                          , spsGlobalTimeU :: UniformLocation
+                         , spsResolutionU :: UniformLocation
                          }
 
 -- Vertices for a fullscreen quad
@@ -90,11 +97,12 @@ elementLength = fromIntegral (length elementBufferData)
 initShader :: IO SPShader
 initShader = do 
   vs <- loadShader VertexShader   "shadepuppy.vert"
-  fs <- loadShader FragmentShader "shadepuppy.frag"
+  fs <- loadShader FragmentShader (shaderName ++ ".frag")
   p  <- linkShaderProgram [vs, fs]
   SPShader p
     <$> get (attribLocation p "vertexPosition")
     <*> get (uniformLocation p "iGlobalTime")
+    <*> get (uniformLocation p "iResolution")
 
 setupResources :: IO SPShader
 setupResources = do
