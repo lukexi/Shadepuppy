@@ -6,14 +6,14 @@ import Graphics.Rendering.OpenGL
 import Graphics.GLUtil
 import Foreign.Storable (sizeOf)
 
--- Initialization to set up window --
+-- Initialization to set up window
 main :: IO ()
 main = do
   -- Initialize GLFW
   _ <- init
   applyWindowHints
   
-  maybeWindow <- createWindow 640 480 "SpacePuppy" Nothing Nothing
+  maybeWindow <- createWindow 640 480 "ShadePuppy" Nothing Nothing
   
   case maybeWindow of
     Nothing     -> print "Couldn't create a window :*(" 
@@ -29,7 +29,7 @@ main = do
       -- Begin rendering
       mainLoop window shader 0
 
--- Actually Starting once window is up --
+-- Begin rendering
 mainLoop :: Window -> SPShader -> GLfloat -> IO a
 mainLoop window shader frameNumber = do
   -- Clear the frame
@@ -87,8 +87,8 @@ elementLength = fromIntegral (length elementBufferData)
 -- | Load our shaders and find their attribute/uniform locations
 initShader :: IO SPShader
 initShader = do 
-  vs <- loadShader VertexShader   "spacepuppy.vert"
-  fs <- loadShader FragmentShader "spacepuppy.frag"
+  vs <- loadShader VertexShader   "shadepuppy.vert"
+  fs <- loadShader FragmentShader "shadepuppy.frag"
   p  <- linkShaderProgram [vs, fs]
   SPShader p
     <$> get (attribLocation p "position")
