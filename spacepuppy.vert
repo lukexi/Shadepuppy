@@ -5,7 +5,7 @@ uniform float frameNumber;
 out vec2 fragXY;
 
 void main() {
-    fragXY = position;
+    fragXY = (position + 1) / 2;
     gl_Position = vec4(position, 0.0, 1.0);
 }
 
