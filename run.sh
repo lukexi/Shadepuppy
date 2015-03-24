@@ -1,1 +1,0 @@
-ghc -outputdir build main.hs && ./main
