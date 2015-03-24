@@ -34,7 +34,7 @@ main = do
       mainLoop window (rscShader resources) 0
 
 -- Actually Starting once window is up --
-mainLoop :: Window -> SPShader -> GLclampf -> IO a
+mainLoop :: Window -> SPShader -> GLfloat -> IO a
 mainLoop window shader frameNumber = do
   -- Clear the frame
   clearColor $= Color4 0.1 0.2 0.1 0 
