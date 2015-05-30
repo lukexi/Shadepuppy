@@ -23,7 +23,9 @@ main = do
   (window, events, renderHMD, resX, resY) <- reacquire 0 $ do
     hmd <- createHMD
     (resX, resY) <- getHMDResolution hmd
-    (window, events) <- createWindow "ShadePuppy" resX resY
+    
+    (window, events) <- createWindow "ShadePuppy" (resX`div`2) (resY`div`2)
+    -- Compensate for retina framebuffers on Mac
     (frameW, frameH) <- GLFW.getFramebufferSize window
     when (frameW > resX && frameH > resY) $
         GLFW.setWindowSize window (resX `div` 2) (resY `div` 2)
@@ -36,15 +38,12 @@ main = do
     
     return (window, events, renderHMD, resX, resY)
 
-  shaderProg       <- createShaderProgram "shadepuppy.vert" (shaderName ++ ".frag")
-  iGlobalTimeU     <- getShaderUniform shaderProg "iGlobalTime"
-  iResolutionU     <- getShaderUniform shaderProg "iResolution"
+  shaderProg      <- createShaderProgram "shadepuppy.vert" (shaderName ++ ".frag")
+  iGlobalTime     <- getShaderUniform shaderProg "iGlobalTime"
+  iResolution     <- getShaderUniform shaderProg "iResolution"
   
-  leftQuad  <- makeQuad shaderProg (-1, -1) (0, 1)
-  rightQuad <- makeQuad shaderProg ( 0, -1) (1, 1)
-  let quads = zip [0..] [leftQuad, rightQuad]
-  -- let quads = zip [0..] [leftQuad]
-  
+  quad            <- makeQuad shaderProg
+  glBindVertexArray (unVertexArrayObject (meshVAO quad))
   glUseProgram (unGLProgram shaderProg)
   -- Begin rendering
   forever $ do
@@ -55,18 +54,17 @@ main = do
 
     -- Send along the current framenumber as a uniform
     globalTime <- realToFrac . utctDayTime <$> getCurrentTime
-    glUniform1f (unUniformLocation iGlobalTimeU) globalTime
-    glUniform2f (unUniformLocation iResolutionU) (fromIntegral resX/2) (fromIntegral resY)
+    glUniform1f (unUniformLocation iGlobalTime) globalTime
+    glUniform2f (unUniformLocation iResolution) (fromIntegral resX/2) (fromIntegral resY)
     
-    -- renderHMDFrame renderHMD $ \eyePoses -> do
-    glClear GL_COLOR_BUFFER_BIT
-    forM_ quads $ \(eyeIndex, quad) -> do
-      -- (eyeOrientation, eyePosition) <- getPoses_OrientationAndPositionForEye eyePoses eyeIndex
+    renderHMDFrame renderHMD $ \eyePoses -> do
+      glClear GL_COLOR_BUFFER_BIT
+      forM_ (renEyes renderHMD) $ \eye -> do
+        (eyeOrientation, eyePosition) <- getPoses_OrientationAndPositionForEye eyePoses (eyeIndex eye)
+        let (x,y,w,h)     = eyeViewport eye
+        glViewport x y w h
 
-      -- Draw the fullscreens quad
-      glBindVertexArray (unVertexArrayObject (meshVAO quad))
-      glDrawElements GL_TRIANGLES (meshIndexCount quad) GL_UNSIGNED_INT nullPtr
-    swapBuffers window
+        glDrawElements GL_TRIANGLES (meshIndexCount quad) GL_UNSIGNED_INT nullPtr
         
  
 

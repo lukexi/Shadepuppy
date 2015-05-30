@@ -10,8 +10,8 @@ import Foreign
 ----------------------------------------------------------
 
 
--- makeQuad :: GLProgram -> IO Mesh
-makeQuad program (x1,y1) (x2, y2) = do
+makeQuad :: GLProgram -> IO Mesh
+makeQuad program = do
 
     aPosition <- getShaderAttribute program "aPosition"
     aUV       <- getShaderAttribute program "aUV"
@@ -28,10 +28,10 @@ makeQuad program (x1,y1) (x2, y2) = do
     
     -- Buffer the quad vertices
     let quadVertices = 
-            [ x1 , y1  
-            , x2 , y1
-            , x2 , y2
-            , x1 , y2 ] :: [GLfloat]
+            [ -1 , -1  
+            ,  1 , -1
+            ,  1 ,  1
+            , -1 ,  1 ] :: [GLfloat]
 
     vaoQuadVertices <- overPtr (glGenBuffers 1)
 

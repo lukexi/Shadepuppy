@@ -26,10 +26,11 @@ main = do
   iGlobalTimeU     <- getShaderUniform shaderProg "iGlobalTime"
   iResolutionU     <- getShaderUniform shaderProg "iResolution"
   
-  quad <- makeQuad shaderProg
+  quad             <- makeQuad shaderProg
   
   glBindVertexArray (unVertexArrayObject (meshVAO quad))
   glUseProgram (unGLProgram shaderProg)
+
   -- Begin rendering
   forever $ do
     -- Clear the frame
