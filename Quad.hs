@@ -14,6 +14,7 @@ import Foreign
 makeQuad program (x1,y1) (x2, y2) = do
 
     aPosition <- getShaderAttribute program "aPosition"
+    aUV       <- getShaderAttribute program "aUV"
 
     -- Setup a VAO
     vaoQuad <- overPtr (glGenVertexArrays 1)
@@ -53,6 +54,36 @@ makeQuad program (x1,y1) (x2, y2) = do
         0                 -- no extra data between each position
         nullPtr           -- offset of first element
 
+    ---------------
+    -- Quad UVs
+    ---------------
+    -- Buffer the quad vertices
+    let quadUVs = 
+            [ 0 , 0  
+            , 1 , 0
+            , 1 , 1
+            , 0 , 1 ] :: [GLfloat]
+
+    vaoQuadUVs <- overPtr (glGenBuffers 1)
+
+    glBindBuffer GL_ARRAY_BUFFER vaoQuadUVs
+
+    let quadUVsSize = fromIntegral (sizeOf (undefined :: GLfloat) * length quadUVs)
+
+    withArray quadUVs $ 
+        \quadUVsPtr ->
+            glBufferData GL_ARRAY_BUFFER quadUVsSize (castPtr quadUVsPtr) GL_STATIC_DRAW 
+
+    -- Describe our vertices array to OpenGL
+    glEnableVertexAttribArray (fromIntegral (unAttributeLocation aUV))
+
+    glVertexAttribPointer
+        (fromIntegral (unAttributeLocation aUV)) -- attribute
+        2                 -- number of elements per vertex, here (u,v)
+        GL_FLOAT          -- the type of each element
+        GL_FALSE          -- don't normalize
+        0                 -- no extra data between each position
+        nullPtr           -- offset of first element
 
     ----------------
     -- Quad Indicies
