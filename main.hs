@@ -6,11 +6,13 @@ import Graphics.Rendering.OpenGL
 import Graphics.GLUtil
 import Foreign.Storable (sizeOf)
 import Data.Time
+import Halive.Utils
 
 shaderName :: String
 -- shaderName = "shadepuppy" -- default shader
 -- shaderName = "CreationBySilexars"
-shaderName = "ImpactByCabbibo"
+-- shaderName = "ImpactByCabbibo"
+shaderName = "RaymarchingPrimitives"
 
 -- Initialization to set up window
 main :: IO ()
@@ -19,7 +21,7 @@ main = do
   _ <- init
   applyWindowHints
   
-  maybeWindow <- createWindow 640 480 "ShadePuppy" Nothing Nothing
+  maybeWindow <- reacquire 0 $ createWindow 640 480 "ShadePuppy" Nothing Nothing
   
   case maybeWindow of
     Nothing     -> print "Couldn't create a window :*(" 
@@ -33,12 +35,11 @@ main = do
       shader <- setupResources
 
       -- Begin rendering
-      startTime <- getCurrentTime
-      forever $ renderFrame window shader startTime
+      forever $ renderFrame window shader
 
 -- Begin rendering
-renderFrame :: Window -> SPShader -> UTCTime -> IO ()
-renderFrame window shader startTime = do
+renderFrame :: Window -> SPShader -> IO ()
+renderFrame window shader = do
   -- Clear the frame
   clearColor $= Color4 0.1 0.2 0.1 0 
   clear [ ColorBuffer ]
@@ -48,7 +49,7 @@ renderFrame window shader startTime = do
   viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
   
   -- Send along the current framenumber as a uniform
-  globalTime <- realToFrac . flip diffUTCTime startTime <$> getCurrentTime
+  globalTime <- realToFrac . utctDayTime <$> getCurrentTime
   uniform (spsGlobalTimeU shader) $= Index1 (globalTime :: GLfloat)
   uniform (spsResolutionU shader) $= Vertex3 (fromIntegral width) (fromIntegral height) (0 :: GLfloat)
   
