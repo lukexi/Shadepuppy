@@ -25,9 +25,9 @@ main = do
   shaderProg       <- createShaderProgram "shadepuppy.vert" (shaderName ++ ".frag")
   iGlobalTimeU     <- getShaderUniform shaderProg "iGlobalTime"
   iResolutionU     <- getShaderUniform shaderProg "iResolution"
-
+  
   quad <- makeQuad shaderProg
-
+  
   glBindVertexArray (unVertexArrayObject (meshVAO quad))
   glUseProgram (unGLProgram shaderProg)
   -- Begin rendering

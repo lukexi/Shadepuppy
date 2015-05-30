@@ -27,10 +27,10 @@ makeQuad program = do
     
     -- Buffer the quad vertices
     let quadVertices = 
-            [ -1.0 , -1.0 ,  0.0  
-            ,  1.0 , -1.0 ,  0.0  
-            ,  1.0 ,  1.0 ,  0.0  
-            , -1.0 ,  1.0 ,  0.0 ] :: [GLfloat]
+            [ -1.0 , -1.0  
+            ,  1.0 , -1.0  
+            ,  1.0 ,  1.0  
+            , -1.0 ,  1.0 ] :: [GLfloat]
 
     vaoQuadVertices <- overPtr (glGenBuffers 1)
 
@@ -47,7 +47,7 @@ makeQuad program = do
 
     glVertexAttribPointer
         (fromIntegral (unAttributeLocation aPosition)) -- attribute
-        3                 -- number of elements per vertex, here (x,y,z)
+        2                 -- number of elements per vertex, here (x,y)
         GL_FLOAT          -- the type of each element
         GL_FALSE          -- don't normalize
         0                 -- no extra data between each position
