@@ -2,7 +2,7 @@
 
 in vec2 fragCoord;
 uniform float iGlobalTime;
-uniform vec3  iResolution;
+uniform vec2  iResolution;
 out vec4 fragColor;
 
 // http://www.pouet.net/prod.php?which=57245
