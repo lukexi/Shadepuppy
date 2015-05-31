@@ -11,10 +11,12 @@ import Halive.Utils
 import Quad
 import Foreign.Ptr
 import Graphics.Oculus
-
+import Linear
+import Data.Maybe
 shaderName :: String
 -- shaderName = "RaymarchingPrimitives"
-shaderName = "shadepuppy"
+-- shaderName = "shadepuppy"
+shaderName = "MengerSponge"
 
 -- Initialization to set up window
 main :: IO ()
@@ -41,6 +43,8 @@ main = do
   shaderProg      <- createShaderProgram "shadepuppy.vert" (shaderName ++ ".frag")
   iGlobalTime     <- getShaderUniform shaderProg "iGlobalTime"
   iResolution     <- getShaderUniform shaderProg "iResolution"
+  iEyeOrientation <- getShaderUniform shaderProg "iEyeOrientation"
+  iEyePosition    <- getShaderUniform shaderProg "iEyePosition"
   
   quad            <- makeQuad shaderProg
   glBindVertexArray (unVertexArrayObject (meshVAO quad))
@@ -60,9 +64,16 @@ main = do
     renderHMDFrame renderHMD $ \eyePoses -> do
       glClear GL_COLOR_BUFFER_BIT
       forM_ (renEyes renderHMD) $ \eye -> do
-        (eyeOrientation, eyePosition) <- getPoses_OrientationAndPositionForEye eyePoses (eyeIndex eye)
         let (x,y,w,h)     = eyeViewport eye
         glViewport x y w h
+
+        (eyeOrientation, eyePosition) <- getPoses_OrientationAndPositionForEye eyePoses (eyeIndex eye)
+        let V3 px py pz = eyePosition
+
+        let orientMat = fromQuaternion eyeOrientation
+        -- uniformM33 iEyeOrientation (fromMaybe orientMat (inv33 orientMat))
+        uniformM33 iEyeOrientation orientMat
+        glUniform3f (unUniformLocation iEyePosition)    px py pz
 
         glDrawElements GL_TRIANGLES (meshIndexCount quad) GL_UNSIGNED_INT nullPtr
         
