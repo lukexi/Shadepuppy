@@ -73,7 +73,8 @@ main = do
 
         (eyeOrientation, eyePosition) <- getPoses_OrientationAndPositionForEye eyePoses (eyeIndex eye)
         let eyeCameraMat = mkTransformation eyeOrientation eyePosition
-            eyeInvMat    = fromMaybe eyeCameraMat (inv44 eyeCameraMat)
+            -- eyeInvMat    = fromMaybe eyeCameraMat (inv44 eyeCameraMat)
+            eyeInvMat    = eyeCameraMat
             corA         = eyeInvMat !* corA0
             corB         = eyeInvMat !* corB0
             corC         = eyeInvMat !* corC0
