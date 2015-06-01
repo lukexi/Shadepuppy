@@ -1,18 +1,13 @@
 import Prelude hiding (init) 
-import Control.Applicative
 import Control.Monad
 import Graphics.UI.GLFW.Pal
-import qualified Graphics.UI.GLFW as GLFW
 import Graphics.GL.Pal
 import Graphics.GL
-import Foreign.Storable (sizeOf)
 import Data.Time
-import Halive.Utils
 import Quad
 import Foreign.Ptr
 import Graphics.Oculus
 import Linear
-import Data.Maybe
 shaderName :: String
 -- shaderName = "RaymarchingPrimitives"
 -- shaderName = "shadepuppy"
@@ -22,24 +17,22 @@ shaderName = "MengerSponge"
 main :: IO ()
 main = do
   -- Initialize GLFW
-  (window, events, renderHMD, resX, resY) <- reacquire 0 $ do
-    hmd <- createHMD
-    (resX, resY) <- getHMDResolution hmd
-    
-    (window, events) <- createWindow "ShadePuppy" (resX`div`2) (resY`div`2)
-    -- Compensate for retina framebuffers on Mac
-    (frameW, frameH) <- GLFW.getFramebufferSize window
-    when (frameW > resX && frameH > resY) $
-        GLFW.setWindowSize window (resX `div` 2) (resY `div` 2)
+  hmd <- createHMD
+  (resX, resY) <- getHMDResolution hmd
+  
+  -- (window, events) <- createWindow "ShadePuppy" (resX`div`2) (resY`div`2)
+  (window, events) <- createWindow "ShadePuppy" resX resY
+  -- Compensate for retina framebuffers on Mac
+  -- (frameW, frameH) <- GLFW.getFramebufferSize window
+  -- when (frameW > resX && frameH > resY) $
+  --     GLFW.setWindowSize window (resX `div` 2) (resY `div` 2)
 
-    renderHMD <- configureHMDRendering hmd "Scaffold"
-    dismissHSWDisplay hmd
-    recenterPose hmd
+  renderHMD <- configureHMDRendering hmd "ShadePuppy"
+  dismissHSWDisplay hmd
+  recenterPose hmd
 
-    
-    
-    return (window, events, renderHMD, resX, resY)
-
+  glClearColor 0.0 0.1 0.1 0
+  glEnable GL_DEPTH_TEST
   shaderProg      <- createShaderProgram "shadepuppy.vert" (shaderName ++ ".frag")
   iGlobalTime     <- getShaderUniform shaderProg "iGlobalTime"
   iResolution     <- getShaderUniform shaderProg "iResolution"
@@ -50,20 +43,18 @@ main = do
   glBindVertexArray (unVertexArrayObject (meshVAO quad))
   glUseProgram (unGLProgram shaderProg)
   -- Begin rendering
-  forever $ do
-    processEvents events $ \_ -> return ()
-    -- Clear the frame
-    glClearColor 0.1 0.2 0.1 0 
-    glClear GL_COLOR_BUFFER_BIT
-
-    -- Send along the current framenumber as a uniform
-    globalTime <- realToFrac . utctDayTime <$> getCurrentTime
-    glUniform1f (unUniformLocation iGlobalTime) globalTime
-    glUniform2f (unUniformLocation iResolution) (fromIntegral resX/2) (fromIntegral resY)
-    
+  whileWindow window $ do
+    processEvents events (closeOnEscape window)    
     renderHMDFrame renderHMD $ \eyePoses -> do
-      glClear GL_COLOR_BUFFER_BIT
+
+      glClear ( GL_COLOR_BUFFER_BIT .|. GL_DEPTH_BUFFER_BIT )
+
+      -- Send along the current framenumber as a uniform
+      glUniform1f (unUniformLocation iGlobalTime) =<< realToFrac . utctDayTime <$> getCurrentTime
+      glUniform2f (unUniformLocation iResolution) (fromIntegral resX/2) (fromIntegral resY)
+
       forM_ (renEyes renderHMD) $ \eye -> do
+
         let (x,y,w,h)     = eyeViewport eye
         glViewport x y w h
 

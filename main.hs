@@ -1,10 +1,8 @@
 import Prelude hiding (init) 
-import Control.Applicative
 import Control.Monad
 import Graphics.UI.GLFW.Pal
 import Graphics.GL.Pal
 import Graphics.GL
-import Foreign.Storable (sizeOf)
 import Data.Time
 import Halive.Utils
 import Quad
