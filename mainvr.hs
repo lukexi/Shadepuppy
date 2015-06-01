@@ -16,8 +16,8 @@ import Data.Maybe
 shaderName :: String
 -- shaderName = "RaymarchingPrimitives"
 -- shaderName = "shadepuppy"
--- shaderName = "MengerSponge"
-shaderName = "Sierpinski"
+shaderName = "MengerSponge"
+-- shaderName = "Sierpinski"
 
 -- Initialization to set up window
 main :: IO ()
@@ -69,6 +69,7 @@ main = do
             corC0 = point $ V3 ( fovpRightTan) ( fovpUpTan)   (-1)
             corD0 = point $ V3 (-fovpLeftTan)  ( fovpUpTan)   (-1)
             apex0 = point $ V3 0 0 0
+        -- print [corA0,corB0,corC0, corD0, apex0]
 
         (eyeOrientation, eyePosition) <- getPoses_OrientationAndPositionForEye eyePoses (eyeIndex eye)
         let eyeCameraMat = mkTransformation eyeOrientation eyePosition
@@ -84,10 +85,10 @@ main = do
                         corC ^. _x, corC ^. _y, corC ^. _z, 
                         corD ^. _x, corD ^. _y, corD ^. _z,
                         apex ^. _x, apex ^. _y, apex ^. _z ]
-        withArrayLen corners (\len -> glUniform3fv (unUniformLocation unCorners) (fromIntegral len))
+        withArray corners (glUniform3fv (unUniformLocation unCorners) 5)
 
         let viewport = map fromIntegral [x,y,w,h]
-        withArrayLen viewport (\len -> glUniform4fv (unUniformLocation unViewport) (fromIntegral len))
+        withArray viewport (glUniform4fv (unUniformLocation unViewport) 1)
 
         glDrawElements GL_TRIANGLES (meshIndexCount quad) GL_UNSIGNED_INT nullPtr
         
