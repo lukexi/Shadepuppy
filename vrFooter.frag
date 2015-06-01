@@ -13,5 +13,5 @@ void main( void )
 
     mainVR( color, gl_FragCoord.xy-unViewport.xy, ro, rd );
     color.w = 1.0;
-    gl_FragColor = color;
+    fragColor = color;
 }

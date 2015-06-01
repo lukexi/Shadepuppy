@@ -16,8 +16,8 @@ import Control.Lens
 shaderName :: String
 -- shaderName = "RaymarchingPrimitives"
 -- shaderName = "shadepuppy"
-shaderName = "MengerSponge"
--- shaderName = "Sierpinski"
+-- shaderName = "MengerSponge"
+shaderName = "Sierpinski"
 
 -- Initialization to set up window
 main :: IO ()
