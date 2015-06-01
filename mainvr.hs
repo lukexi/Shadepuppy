@@ -11,7 +11,7 @@ import Foreign
 import Graphics.Oculus
 import Linear
 import Control.Lens
-import Data.Maybe
+-- import Data.Maybe
 
 shaderName :: String
 -- shaderName = "RaymarchingPrimitives"
@@ -57,23 +57,26 @@ main = do
       -- Send along the current framenumber as a uniform
       glUniform1f (unUniformLocation iGlobalTime) =<< realToFrac . utctDayTime <$> getCurrentTime
       glUniform2f (unUniformLocation iResolution) (fromIntegral resX/2) (fromIntegral resY)
+      
 
       forM_ (renEyes renderHMD) $ \eye -> do
         let (x,y,w,h) = eyeViewport eye
         glViewport x y w h
 
-
-        let FOVPort{..} = eyeFOV eye;
+        let FOVPort{..} = eyeFOV eye
             corA0 = point $ V3 (-fovpLeftTan)  (-fovpDownTan) (-1)
             corB0 = point $ V3 ( fovpRightTan) (-fovpDownTan) (-1)
             corC0 = point $ V3 ( fovpRightTan) ( fovpUpTan)   (-1)
             corD0 = point $ V3 (-fovpLeftTan)  ( fovpUpTan)   (-1)
             apex0 = point $ V3 0 0 0
-        -- print [corA0,corB0,corC0, corD0, apex0]
 
         (eyeOrientation, eyePosition) <- getPoses_OrientationAndPositionForEye eyePoses (eyeIndex eye)
+
+        -- now <- realToFrac . utctDayTime <$> getCurrentTime
+        -- let eyeOrientation = axisAngle (V3 0 1 0) ((sin nowww + )1 / 2)
+        --     eyePosition = V3 0 (-4) (3)
+        
         let eyeCameraMat = mkTransformation eyeOrientation eyePosition
-            -- eyeInvMat    = fromMaybe eyeCameraMat (inv44 eyeCameraMat)
             eyeInvMat    = eyeCameraMat
             corA         = eyeInvMat !* corA0
             corB         = eyeInvMat !* corB0
@@ -86,8 +89,10 @@ main = do
                         corC ^. _x, corC ^. _y, corC ^. _z, 
                         corD ^. _x, corD ^. _y, corD ^. _z,
                         apex ^. _x, apex ^. _y, apex ^. _z ]
+
         withArray corners (glUniform3fv (unUniformLocation unCorners) 5)
 
+        -- Pin x to 0 to fix zoomed-in right eye
         let viewport = map fromIntegral [x,y,w,h]
         withArray viewport (glUniform4fv (unUniformLocation unViewport) 1)
 
