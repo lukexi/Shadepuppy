@@ -18,8 +18,8 @@ import Data.Monoid
 shaderName :: String
 -- shaderName = "RaymarchingPrimitives"
 -- shaderName = "shadepuppy"
-shaderName = "MengerSponge"
--- shaderName = "Sierpinski"
+-- shaderName = "MengerSponge"
+shaderName = "Sierpinski"
 
 assembleShader :: IO GLProgram
 assembleShader = do
