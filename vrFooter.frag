@@ -1,7 +1,4 @@
-// From shadertoy effect.js
 
-uniform vec4 unViewport;
-uniform vec3 unCorners[5];
 void main( void )
 {
     vec4 color = vec4(0.0,0.0,0.0,1.0);
@@ -13,5 +10,5 @@ void main( void )
 
     mainVR( color, gl_FragCoord.xy-unViewport.xy, ro, rd );
     color.w = 1.0;
-    gl_FragColor = color;
+    fragColor = color;
 }

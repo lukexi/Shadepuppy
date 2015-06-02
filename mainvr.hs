@@ -11,6 +11,8 @@ import Foreign
 import Graphics.Oculus
 import Linear
 import Control.Lens
+import qualified Data.Text.IO as Text
+import Data.Monoid
 -- import Data.Maybe
 
 shaderName :: String
@@ -18,6 +20,20 @@ shaderName :: String
 -- shaderName = "shadepuppy"
 shaderName = "MengerSponge"
 -- shaderName = "Sierpinski"
+
+assembleShader :: IO GLProgram
+assembleShader = do
+    let fragFile = (shaderName ++ ".frag")
+    fragSource <- Text.readFile fragFile
+
+    -- Add the needed uniforms and main function from the header and footer
+    fragHeader <- Text.readFile "vrHeader.frag"
+    fragFooter <- Text.readFile "vrFooter.frag"
+    let fullFragSource = fragHeader <> fragSource <> fragFooter
+
+    -- We use a standard vert shader to position the full screen quad
+    vertSource <- Text.readFile "shadepuppy.vert"
+    createShaderProgramFromSources "shadepuppy.vert" vertSource fragFile fullFragSource
 
 -- Initialization to set up window
 main :: IO ()
@@ -38,7 +54,7 @@ main = do
 
   glClearColor 0.0 0.1 0.1 0
   glEnable GL_DEPTH_TEST
-  shaderProg      <- createShaderProgram "shadepuppy.vert" (shaderName ++ ".frag")
+  shaderProg      <- assembleShader
   iGlobalTime     <- getShaderUniform shaderProg "iGlobalTime"
   iResolution     <- getShaderUniform shaderProg "iResolution"
   unCorners       <- getShaderUniform shaderProg "unCorners"
@@ -75,7 +91,7 @@ main = do
         -- now <- realToFrac . utctDayTime <$> getCurrentTime
         -- let eyeOrientation = axisAngle (V3 0 1 0) ((sin nowww + )1 / 2)
         --     eyePosition = V3 0 (-4) (3)
-        
+
         let eyeCameraMat = mkTransformation eyeOrientation eyePosition
             eyeInvMat    = eyeCameraMat
             corA         = eyeInvMat !* corA0
