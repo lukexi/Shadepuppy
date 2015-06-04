@@ -11,9 +11,9 @@ import Foreign
 import Graphics.Oculus
 import Linear
 import Control.Lens
-import qualified Data.Text.IO as Text
-import Data.Monoid
-import Texture
+
+import Shader
+
 -- import Data.Maybe
 
 shaderName :: String
@@ -22,19 +22,6 @@ shaderName :: String
 -- shaderName = "MengerSponge"
 shaderName = "Sierpinski"
 
-assembleShader :: IO GLProgram
-assembleShader = do
-    let fragFile = (shaderName ++ ".frag")
-    fragSource <- Text.readFile fragFile
-
-    -- Add the needed uniforms and main function from the header and footer
-    fragHeader <- Text.readFile "vrHeader.frag"
-    fragFooter <- Text.readFile "vrFooter.frag"
-    let fullFragSource = fragHeader <> fragSource <> fragFooter
-
-    -- We use a standard vert shader to position the full screen quad
-    vertSource <- Text.readFile "shadepuppy.vert"
-    createShaderProgramFromSources "shadepuppy.vert" vertSource fragFile fullFragSource
 
 -- Initialization to set up window
 main :: IO ()
@@ -55,18 +42,16 @@ main = do
 
   glClearColor 0.0 0.1 0.1 0
   glEnable GL_DEPTH_TEST
-  shaderProg      <- assembleShader
-  iGlobalTime     <- getShaderUniform shaderProg "iGlobalTime"
-  iResolution     <- getShaderUniform shaderProg "iResolution"
-  unCorners       <- getShaderUniform shaderProg "unCorners"
-  unViewport      <- getShaderUniform shaderProg "unViewport"
+  ShadepuppyShader{..} <- assembleShaderWithFooter "vrFooter.frag" shaderName
   
-  quad            <- makeQuad shaderProg
+  
+  quad            <- makeQuad shadepuppyProgram
   glBindVertexArray (unVertexArrayObject (meshVAO quad))
-  glUseProgram (unGLProgram shaderProg)
+  glUseProgram (unGLProgram shadepuppyProgram)
+  
   -- Begin rendering
   whileWindow window $ do
-    processEvents events (closeOnEscape window)    
+    processEvents events (closeOnEscape window)
     renderHMDFrame renderHMD $ \eyePoses -> do
 
       glClear ( GL_COLOR_BUFFER_BIT .|. GL_DEPTH_BUFFER_BIT )
