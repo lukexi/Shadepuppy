@@ -13,6 +13,7 @@ import Linear
 import Control.Lens
 import qualified Data.Text.IO as Text
 import Data.Monoid
+import Texture
 -- import Data.Maybe
 
 shaderName :: String
