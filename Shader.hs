@@ -31,13 +31,13 @@ buildShader footerFile shaderName = do
 
 assembleShaderWithFooter :: FilePath -> FilePath -> IO ShadepuppyShader
 assembleShaderWithFooter footerFile shaderName = do
-    program <- buildShader footerFile shaderName
+    shadepuppyProgram <- buildShader footerFile shaderName
 
-    iGlobalTime     <- getShaderUniform program "iGlobalTime"
-    iResolution     <- getShaderUniform program "iResolution"
-    unCorners       <- getShaderUniform program "unCorners"
-    unViewport      <- getShaderUniform program "unViewport"
-    iChannel0       <- getShaderUniform program "iChannel0"
-    iMouse          <- getShaderUniform program "iMouse"
+    iGlobalTime     <- getShaderUniform shadepuppyProgram "iGlobalTime"
+    iResolution     <- getShaderUniform shadepuppyProgram "iResolution"
+    unCorners       <- getShaderUniform shadepuppyProgram "unCorners"
+    unViewport      <- getShaderUniform shadepuppyProgram "unViewport"
+    iChannel0       <- getShaderUniform shadepuppyProgram "iChannel0"
+    iMouse          <- getShaderUniform shadepuppyProgram "iMouse"
 
     return ShadepuppyShader{..}

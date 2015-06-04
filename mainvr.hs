@@ -48,7 +48,7 @@ main = do
   quad            <- makeQuad shadepuppyProgram
   glBindVertexArray (unVertexArrayObject (meshVAO quad))
   glUseProgram (unGLProgram shadepuppyProgram)
-  
+
   -- Begin rendering
   whileWindow window $ do
     processEvents events (closeOnEscape window)
@@ -59,8 +59,9 @@ main = do
       -- Send along the current framenumber as a uniform
       glUniform1f (unUniformLocation iGlobalTime) =<< realToFrac . utctDayTime <$> getCurrentTime
       glUniform2f (unUniformLocation iResolution) (fromIntegral resX/2) (fromIntegral resY)
+      (cursorX, cursorY) <- getCursorPos window
+      glUniform4f (unUniformLocation iMouse) cursorX cursorY 0 0
       
-
       forM_ (renEyes renderHMD) $ \eye -> do
         let (x,y,w,h) = eyeViewport eye
         glViewport x y w h

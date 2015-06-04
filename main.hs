@@ -52,6 +52,8 @@ main = do
     globalTime <- realToFrac . utctDayTime <$> getCurrentTime
     glUniform1f (unUniformLocation iGlobalTime) globalTime
     glUniform2f (unUniformLocation iResolution) (fromIntegral width) (fromIntegral height)
+    (cursorX, cursorY) <- getCursorPos window
+    glUniform4f (unUniformLocation iMouse) cursorX cursorY 0 0
     
     -- Draw the fullscreens quad
     glDrawElements GL_TRIANGLES (meshIndexCount quad) GL_UNSIGNED_INT nullPtr
