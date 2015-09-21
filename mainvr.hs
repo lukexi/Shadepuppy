@@ -4,11 +4,11 @@ import Control.Monad
 import Graphics.UI.GLFW.Pal
 import Graphics.GL.Pal
 import Graphics.GL
+import Graphics.Oculus
 import Data.Time
 import Quad
 import Foreign.Ptr
 import Foreign
-import Graphics.Oculus
 import Linear
 import Control.Lens
 import qualified Data.Text.IO as Text
@@ -19,7 +19,11 @@ shaderName :: String
 -- shaderName = "RaymarchingPrimitives"
 -- shaderName = "shadepuppy"
 -- shaderName = "MengerSponge"
-shaderName = "Sierpinski"
+-- shaderName = "Sierpinski"
+-- shaderName = "rods"
+--shaderName = "deathCube"
+shaderName = "face"
+-- shaderName = "iriTest1"
 
 assembleShader :: IO GLProgram
 assembleShader = do
