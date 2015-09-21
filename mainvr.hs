@@ -11,8 +11,9 @@ import Foreign.Ptr
 import Foreign
 import Linear
 import Control.Lens
-import qualified Data.Text.IO as Text
-import Data.Monoid
+
+import Shader
+
 -- import Data.Maybe
 
 shaderName :: String
@@ -25,19 +26,6 @@ shaderName :: String
 shaderName = "face"
 -- shaderName = "iriTest1"
 
-assembleShader :: IO GLProgram
-assembleShader = do
-    let fragFile = (shaderName ++ ".frag")
-    fragSource <- Text.readFile fragFile
-
-    -- Add the needed uniforms and main function from the header and footer
-    fragHeader <- Text.readFile "vrHeader.frag"
-    fragFooter <- Text.readFile "vrFooter.frag"
-    let fullFragSource = fragHeader <> fragSource <> fragFooter
-
-    -- We use a standard vert shader to position the full screen quad
-    vertSource <- Text.readFile "shadepuppy.vert"
-    createShaderProgramFromSources "shadepuppy.vert" vertSource fragFile fullFragSource
 
 -- Initialization to set up window
 main :: IO ()
@@ -58,18 +46,16 @@ main = do
 
   glClearColor 0.0 0.1 0.1 0
   glEnable GL_DEPTH_TEST
-  shaderProg      <- assembleShader
-  iGlobalTime     <- getShaderUniform shaderProg "iGlobalTime"
-  iResolution     <- getShaderUniform shaderProg "iResolution"
-  unCorners       <- getShaderUniform shaderProg "unCorners"
-  unViewport      <- getShaderUniform shaderProg "unViewport"
+  ShadepuppyShader{..} <- assembleShaderWithFooter "vrFooter.frag" shaderName
   
-  quad            <- makeQuad shaderProg
+  
+  quad            <- makeQuad shadepuppyProgram
   glBindVertexArray (unVertexArrayObject (meshVAO quad))
-  glUseProgram (unGLProgram shaderProg)
+  glUseProgram (unGLProgram shadepuppyProgram)
+
   -- Begin rendering
   whileWindow window $ do
-    processEvents events (closeOnEscape window)    
+    processEvents events (closeOnEscape window)
     renderHMDFrame renderHMD $ \eyePoses -> do
 
       glClear ( GL_COLOR_BUFFER_BIT .|. GL_DEPTH_BUFFER_BIT )
@@ -77,8 +63,9 @@ main = do
       -- Send along the current framenumber as a uniform
       glUniform1f (unUniformLocation iGlobalTime) =<< realToFrac . utctDayTime <$> getCurrentTime
       glUniform2f (unUniformLocation iResolution) (fromIntegral resX/2) (fromIntegral resY)
+      (cursorX, cursorY) <- getCursorPos window
+      glUniform4f (unUniformLocation iMouse) cursorX cursorY 0 0
       
-
       forM_ (renEyes renderHMD) $ \eye -> do
         let (x,y,w,h) = eyeViewport eye
         glViewport x y w h

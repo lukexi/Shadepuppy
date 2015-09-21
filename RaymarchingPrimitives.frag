@@ -1,9 +1,3 @@
-#version 330
-
-in vec2 fragCoord;
-uniform float iGlobalTime;
-uniform vec2  iResolution;
-out vec4 fragColor;
 
 // Created by inigo quilez - iq/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
@@ -315,7 +309,7 @@ mat3 setCamera( in vec3 ro, in vec3 ta, float cr )
     return mat3( cu, cv, cw );
 }
 
-void main() {
+void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
     vec2 q = fragCoord.xy/iResolution.xy;
     vec2 p = -1.0+2.0*q;
     p.x *= iResolution.x/iResolution.y;
