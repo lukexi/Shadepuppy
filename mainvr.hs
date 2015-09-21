@@ -4,11 +4,11 @@ import Control.Monad
 import Graphics.UI.GLFW.Pal
 import Graphics.GL.Pal
 import Graphics.GL
+import Graphics.Oculus
 import Data.Time
 import Quad
 import Foreign.Ptr
 import Foreign
-import Graphics.Oculus
 import Linear
 import Control.Lens
 
@@ -22,6 +22,11 @@ shaderName :: String
 -- shaderName = "MengerSponge"
 -- shaderName = "Sierpinski"
 shaderName = "meta"
+-- shaderName = "rods"
+-- shaderName = "deathCube"
+-- shaderName = "face"
+-- shaderName = "iriTest1"
+
 
 
 -- Initialization to set up window
