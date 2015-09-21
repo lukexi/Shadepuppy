@@ -15,7 +15,8 @@ shaderName :: String
 -- shaderName = "CreationBySilexars"
 -- shaderName = "ImpactByCabbibo"
 -- shaderName = "RaymarchingPrimitives"
-shaderName = "texture-test"
+--shaderName = "texture-test"
+shaderName = "meta"
 
 -- Initialization to set up window
 main :: IO ()

@@ -20,7 +20,8 @@ shaderName :: String
 -- shaderName = "RaymarchingPrimitives"
 -- shaderName = "shadepuppy"
 -- shaderName = "MengerSponge"
-shaderName = "Sierpinski"
+-- shaderName = "Sierpinski"
+shaderName = "meta"
 
 
 -- Initialization to set up window
