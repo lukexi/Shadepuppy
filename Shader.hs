@@ -5,17 +5,17 @@ import Graphics.GL.Pal
 import qualified Data.Text.IO as Text
 import Data.Monoid
 
-data ShadepuppyShader = ShadepuppyShader 
-    { shadepuppyProgram :: GLProgram
-    , iGlobalTime :: UniformLocation
-    , iResolution :: UniformLocation
-    , iMouse      :: UniformLocation
-    , iChannel0   :: UniformLocation
-    , unCorners   :: UniformLocation
-    , unViewport  :: UniformLocation
+data ShadepuppyShader = ShadepuppyShader
+    { shadepuppyProgram :: Program
+    , iGlobalTime :: UniformLocation GLfloat
+    , iResolution :: UniformLocation (V2 GLfloat)
+    , iMouse      :: UniformLocation (V2 GLfloat)
+    , iChannel0   :: UniformLocation GLint
+    , unCorners   :: UniformLocation [V3 GLfloat]
+    , unViewport  :: UniformLocation (V4 GLfloat)
     }
 
-buildShader :: FilePath -> FilePath -> IO GLProgram
+buildShader :: FilePath -> FilePath -> IO Program
 buildShader footerFile shaderName = do
     let fragFile = (shaderName ++ ".frag")
     fragSource <- Text.readFile fragFile

@@ -1,0 +1,15 @@
+resolver: nightly-2016-07-07
+packages:
+- .
+- ../halive
+- ../gl-pal
+- ../glfw-pal
+- ../vr-pal
+- ../openvr-hs
+- ../linear-extra
+- ../lens-extra
+extra-deps:
+- GLFW-b-1.4.8.0
+- bindings-GLFW-3.1.2.0
+- inline-c-cpp-0.1.0.0
+allow-newer: true

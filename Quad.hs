@@ -1,16 +1,14 @@
 module Quad where
 
 import Graphics.GL.Pal
-
-import Graphics.GL
 import Foreign
 
 ----------------------------------------------------------
 -- Make Quad
 ----------------------------------------------------------
+data Mesh = Mesh { meshVAO :: VertexArrayObject, meshIndexCount :: GLsizei }
 
-
-makeQuad :: GLProgram -> IO Mesh
+makeQuad :: Program -> IO Mesh
 makeQuad program = do
 
     aPosition <- getShaderAttribute program "aPosition"
@@ -25,10 +23,10 @@ makeQuad program = do
     -----------------
     -- Quad Positions
     -----------------
-    
+
     -- Buffer the quad vertices
-    let quadVertices = 
-            [ -1 , -1  
+    let quadVertices =
+            [ -1 , -1
             ,  1 , -1
             ,  1 ,  1
             , -1 ,  1 ] :: [GLfloat]
@@ -39,9 +37,9 @@ makeQuad program = do
 
     let quadVerticesSize = fromIntegral (sizeOf (undefined :: GLfloat) * length quadVertices)
 
-    withArray quadVertices $ 
+    withArray quadVertices $
         \quadVerticesPtr ->
-            glBufferData GL_ARRAY_BUFFER quadVerticesSize (castPtr quadVerticesPtr) GL_STATIC_DRAW 
+            glBufferData GL_ARRAY_BUFFER quadVerticesSize (castPtr quadVerticesPtr) GL_STATIC_DRAW
 
     -- Describe our vertices array to OpenGL
     glEnableVertexAttribArray (fromIntegral (unAttributeLocation aPosition))
@@ -58,8 +56,8 @@ makeQuad program = do
     -- Quad UVs
     ---------------
     -- Buffer the quad vertices
-    let quadUVs = 
-            [ 0 , 0  
+    let quadUVs =
+            [ 0 , 0
             , 1 , 0
             , 1 , 1
             , 0 , 1 ] :: [GLfloat]
@@ -70,9 +68,9 @@ makeQuad program = do
 
     let quadUVsSize = fromIntegral (sizeOf (undefined :: GLfloat) * length quadUVs)
 
-    withArray quadUVs $ 
+    withArray quadUVs $
         \quadUVsPtr ->
-            glBufferData GL_ARRAY_BUFFER quadUVsSize (castPtr quadUVsPtr) GL_STATIC_DRAW 
+            glBufferData GL_ARRAY_BUFFER quadUVsSize (castPtr quadUVsPtr) GL_STATIC_DRAW
 
     -- Describe our vertices array to OpenGL
     glEnableVertexAttribArray (fromIntegral (unAttributeLocation aUV))
@@ -90,23 +88,23 @@ makeQuad program = do
     ----------------
 
     -- Buffer the quad indices
-    let quadIndices = 
+    let quadIndices =
             [ 0, 1, 2
             , 2, 3, 0 ] :: [GLuint]
-    
+
     iboQuadElements <- overPtr (glGenBuffers 1)
-    
+
     glBindBuffer GL_ELEMENT_ARRAY_BUFFER iboQuadElements
 
     let quadElementsSize = fromIntegral (sizeOf (undefined :: GLuint) * length quadIndices)
-    
-    withArray quadIndices $ 
+
+    withArray quadIndices $
         \quadIndicesPtr ->
             glBufferData GL_ELEMENT_ARRAY_BUFFER quadElementsSize (castPtr quadIndicesPtr) GL_STATIC_DRAW
-    
+
     glBindVertexArray 0
 
-    return $ Mesh 
+    return $ Mesh
         { meshVAO        = VertexArrayObject vaoQuad
         , meshIndexCount = fromIntegral (length quadIndices)
-        } 
+        }
