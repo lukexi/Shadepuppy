@@ -10,10 +10,11 @@ import System.FilePath
 import Shader
 
 shaderName :: String
---shaderName = "shadepuppy" -- default shader
---shaderName = "CreationBySilexars"
+--shaderName = "Sierpinski"
+--shaderName = "MengerSponge"
+shaderName = "CreationBySilexars"
 --shaderName = "ImpactByCabbibo"
-shaderName = "RaymarchingPrimitives"
+--shaderName = "RaymarchingPrimitives"
 --shaderName = "texture-test"
 --shaderName = "meta"
 

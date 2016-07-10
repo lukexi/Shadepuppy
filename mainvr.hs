@@ -20,10 +20,10 @@ import Shader
 -- import Data.Maybe
 
 shaderName :: String
-shaderName = "MengerSponge"
+--shaderName = "MengerSponge"
 --shaderName = "RaymarchingPrimitives"
 --shaderName = "shadepuppy"
---shaderName = "Sierpinski"
+shaderName = "Sierpinski"
 --shaderName = "meta"
 --shaderName = "rods"
 --shaderName = "deathCube"

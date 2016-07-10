@@ -1,16 +1,10 @@
-#version 330
-
-in vec2 fragCoord;
-uniform float iGlobalTime;
-uniform vec2  iResolution;
-out vec4 fragColor;
 
 // http://www.pouet.net/prod.php?which=57245
 
 #define t iGlobalTime
 #define r iResolution.xy
 
-void main() {
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec3 c;
     float l,z=t;
     for(int i=0;i<3;i++) {
