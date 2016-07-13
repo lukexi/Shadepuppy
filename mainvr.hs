@@ -16,14 +16,17 @@ import Control.Lens
 import System.FilePath
 import Halive.Utils
 import Shader
+import Data.Foldable
 
 -- import Data.Maybe
 
 shaderName :: String
---shaderName = "MengerSponge"
+shaderName = "greenvoid"
+--shaderName = "minimal"
 --shaderName = "RaymarchingPrimitives"
+--shaderName = "MengerSponge"
 --shaderName = "shadepuppy"
-shaderName = "Sierpinski"
+--shaderName = "Sierpinski"
 --shaderName = "meta"
 --shaderName = "rods"
 --shaderName = "deathCube"
@@ -33,7 +36,8 @@ shaderName = "Sierpinski"
 -- Initialization to set up window
 main :: IO ()
 main = do
-    vrPal@VRPal{..} <- reacquire 0 $ initVRPal "ShadePuppy" [UseOpenVR]
+    vrPal@VRPal{..} <- reacquire 0 $ initVRPalWithConfig "ShadePuppy"
+        defaultVRPalConfig { vpcMSAASamples = MSAASamples1 }
 
     glClearColor 0.0 0.1 0.1 0
     glEnable GL_DEPTH_TEST
@@ -51,37 +55,28 @@ main = do
             GLFWEvent e -> closeOnEscape gpWindow e
             _ -> return ()
 
-        renderWith vrPal headM44 $ \projMat viewM44 -> do
-            let (resX, resY) = (1080, 1200)
-
+        renderWith vrPal headM44 $ \projMat viewM44 rawProjection viewport -> do
             glClear ( GL_COLOR_BUFFER_BIT .|. GL_DEPTH_BUFFER_BIT )
 
             -- Send along the current framenumber as a uniform
             glUniform1f (unUniformLocation iGlobalTime) =<< realToFrac . utctDayTime <$> getCurrentTime
-            glUniform2f (unUniformLocation iResolution) (fromIntegral resX) (fromIntegral resY)
+            let (resX, resY) = (viewport ^. _z, viewport ^. _w)
+            glUniform2f (unUniformLocation iResolution) resX resY
 
             (cursorX, cursorY) <- getCursorPos gpWindow
             glUniform4f (unUniformLocation iMouse) cursorX cursorY 0 0
 
-            --let fovpLeftTan  = (projMat !* point (V3 -1 0  -1) ) ^._x
-            --    fovpRightTan = (projMat !* point (V3 1  0  -1) ) ^._x
-            --    fovpUpTan    = (projMat !* point (V3 0  1  -1) ) ^._y
-            --    fovpDownTan  = (projMat !* point (V3 0  -1 -1) ) ^._y
-            let n = 1
-                fovpLeftTan  = -n
-                fovpRightTan = n
-                fovpDownTan  = n
-                fovpUpTan    = -n
+            let fovpLeftTan  = rawProjection ^. _x
+                fovpRightTan = rawProjection ^. _y
+                fovpDownTan  = rawProjection ^. _z
+                fovpUpTan    = rawProjection ^. _w
 
-            let eyeCameraMat = viewM44
-                eyeInvMat    = inv44 viewM44
-            --let eyeCameraMat = inv44 viewM44
-            --    eyeInvMat    = viewM44
+            let eyeInvMat    = inv44 viewM44
 
-            let corA0 = point $ V3 (-fovpLeftTan)  (-fovpDownTan) (-1)
-                corB0 = point $ V3 ( fovpRightTan) (-fovpDownTan) (-1)
-                corC0 = point $ V3 ( fovpRightTan) ( fovpUpTan)   (-1)
-                corD0 = point $ V3 (-fovpLeftTan)  ( fovpUpTan)   (-1)
+                corA0 = point $ V3 fovpLeftTan  fovpDownTan -1
+                corB0 = point $ V3 fovpRightTan fovpDownTan -1
+                corC0 = point $ V3 fovpRightTan fovpUpTan   -1
+                corD0 = point $ V3 fovpLeftTan  fovpUpTan   -1
                 apex0 = point $ V3 0 0 0
 
 
@@ -99,9 +94,8 @@ main = do
 
             withArray corners (glUniform3fv (unUniformLocation unCorners) 5)
 
-            let (x,y,w,h) = (0,0,1080,1200)
-            let viewport = map fromIntegral [x,y,w,h]
-            withArray viewport (glUniform4fv (unUniformLocation unViewport) 1)
+            let viewportL = toList viewport
+            withArray viewportL (glUniform4fv (unUniformLocation unViewport) 1)
 
             glDrawElements GL_TRIANGLES (meshIndexCount quad) GL_UNSIGNED_INT nullPtr
 
